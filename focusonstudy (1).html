@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FocusOnStudy — Focus on what matters.</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="focusonstudy.css">
+</head>
+<body>
+
+<!-- ================================================
+     HOME SCREEN
+     ================================================ -->
+<div id="home-screen">
+  <div class="mesh-bg">
+    <div class="mesh-blob"></div>
+    <div class="mesh-blob"></div>
+    <div class="mesh-blob"></div>
+  </div>
+  <div class="noise"></div>
+
+  <div class="home-inner">
+    <nav>
+      <div class="logo">
+        <div class="logo-icon">🎯</div>
+        FocusOnStudy
+      </div>
+      <div class="nav-right">
+        <button class="nav-btn" onclick="openHistory()">📊 Lịch sử</button>
+        <button class="nav-btn" onclick="openHeatmap()">🗓 Heatmap</button>
+      </div>
+    </nav>
+
+    <div class="hero">
+      <div class="hero-badge">
+        <span class="dot"></span>
+        Focus Mode
+      </div>
+
+      <h1>Focus<span>On</span>Study</h1>
+      <p class="slogan">Focus on what matters.</p>
+
+      <div class="stats-bar">
+        <div class="stat-card">
+          <div class="stat-val" id="today-hours">0h 0m</div>
+          <div class="stat-label">Hôm nay</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="total-sessions">0</div>
+          <div class="stat-label">Phiên học</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="streak-days">0 🔥</div>
+          <div class="stat-label">Streak</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="total-hours">0h</div>
+          <div class="stat-label">Tổng giờ</div>
+        </div>
+      </div>
+
+      <div class="start-btn-wrap">
+        <button class="start-btn" onclick="startStudy()">
+          <div class="btn-glow"></div>
+          ⚡ Bắt đầu học
+        </button>
+        <div style="display:flex;justify-content:center;margin-top:16px;">
+          <div class="sound-toggle" id="sound-toggle-home" onclick="toggleSound()">
+            🎵 <span id="sound-toggle-label">Lo-fi nhạc tập trung</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>Made with ⚡ for deep focus · FocusOnStudy 2025</footer>
+  </div>
+</div>
+
+<!-- ================================================
+     STUDY SCREEN (FULLSCREEN)
+     ================================================ -->
+<div id="study-screen">
+  <div class="study-bg"></div>
+  <div class="grid-lines"></div>
+
+  <div class="study-topbar">
+    <div class="study-logo">🎯 FocusOnStudy</div>
+    <div class="realtime-clock" id="realtime-clock">--:--:--</div>
+    <div class="session-info">
+      <span class="session-badge" id="session-exits-badge">Thoát: 0</span>
+      <span class="session-badge" id="session-sound-badge" onclick="toggleSound()" style="cursor:pointer;">🎵 OFF</span>
+    </div>
+  </div>
+
+  <div class="study-inner">
+    <div class="timer-display" id="timer-display">00:00:00</div>
+
+    <div class="focus-ring-wrap">
+      <div class="focus-ring">
+        <svg width="80" height="80" viewBox="0 0 80 80">
+          <circle class="focus-ring-bg" cx="40" cy="40" r="34" fill="none" stroke-width="5"/>
+          <circle class="focus-ring-fill" id="focus-ring-fill" cx="40" cy="40" r="34" fill="none" stroke-width="5"
+            stroke-dasharray="213.6" stroke-dashoffset="213.6"/>
+        </svg>
+        <div class="focus-score-text">
+          <div class="focus-score-num" id="focus-score-num">100</div>
+          <div class="focus-score-label">score</div>
+        </div>
+      </div>
+      <div class="focus-label deep" id="focus-label">Deep Focus</div>
+    </div>
+
+    <div class="focus-progress">
+      <div class="focus-progress-fill" id="focus-progress-fill" style="width:100%"></div>
+    </div>
+
+    <div class="study-controls">
+      <button class="ctrl-btn primary" id="pause-btn" onclick="togglePause()">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>
+        Tạm dừng
+      </button>
+      <button class="ctrl-btn danger" onclick="endSession()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        Kết thúc
+      </button>
+    </div>
+  </div>
+
+  <div class="exit-warning" id="exit-warning">
+    ⚠ Bạn đã thoát chế độ tập trung — Timer đã pause
+  </div>
+</div>
+
+<!-- ================================================
+     SUMMARY MODAL
+     ================================================ -->
+<div class="modal-overlay" id="summary-modal">
+  <div class="modal">
+    <div class="modal-title">📋 Tổng kết phiên học</div>
+    <div class="modal-sub">Xem kết quả phiên học của bạn</div>
+
+    <div class="score-badge-big" id="summary-score-badge">🎯 Deep Focus</div>
+
+    <div class="summary-grid">
+      <div class="summary-card time">
+        <div class="summary-card-val" id="sum-time">--</div>
+        <div class="summary-card-label">Thời gian học</div>
+      </div>
+      <div class="summary-card score">
+        <div class="summary-card-val" id="sum-score">--</div>
+        <div class="summary-card-label">Focus Score</div>
+      </div>
+      <div class="summary-card exits">
+        <div class="summary-card-val" id="sum-exits">--</div>
+        <div class="summary-card-label">Lần thoát FS</div>
+      </div>
+      <div class="summary-card streak">
+        <div class="summary-card-val" id="sum-streak">--</div>
+        <div class="summary-card-label">Streak 🔥</div>
+      </div>
+    </div>
+
+    <div class="achievements-section">
+      <div class="achievements-title">🏆 Thành tích</div>
+      <div class="achievements-list" id="achievements-list"></div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn primary" onclick="closeSummary()">🔒 Học tiếp</button>
+      <button class="modal-btn secondary" onclick="closeSummaryToHome()">🏠 Về trang chủ</button>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     HISTORY PANEL
+     ================================================ -->
+<div class="panel-overlay" id="history-panel" onclick="this===event.target&&closeHistory()">
+  <div class="panel" onclick="event.stopPropagation()">
+    <div class="panel-header">
+      <div class="panel-title">📚 Lịch sử học tập</div>
+      <button class="panel-close" onclick="closeHistory()">Đóng</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
+<!-- ================================================
+     HEATMAP PANEL
+     ================================================ -->
+<div class="panel-overlay" id="heatmap-panel" onclick="this===event.target&&closeHeatmap()">
+  <div class="panel" onclick="event.stopPropagation()">
+    <div class="panel-header">
+      <div class="panel-title">🗓 Heatmap học tập (1 năm)</div>
+      <button class="panel-close" onclick="closeHeatmap()">Đóng</button>
+    </div>
+    <div class="heatmap-months" id="heatmap-months"></div>
+    <div class="heatmap-grid" id="heatmap-grid"></div>
+    <div class="heatmap-legend">
+      <span>Ít</span>
+      <div class="heatmap-legend-item" style="background:var(--surface2)"></div>
+      <div class="heatmap-legend-item" style="background:rgba(79,142,247,0.25)"></div>
+      <div class="heatmap-legend-item" style="background:rgba(79,142,247,0.5)"></div>
+      <div class="heatmap-legend-item" style="background:rgba(79,142,247,0.75)"></div>
+      <div class="heatmap-legend-item" style="background:rgba(79,142,247,1)"></div>
+      <span>Nhiều</span>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================
+     JAVASCRIPT
+     ================================================ -->
+<script>
+// ============================
+// STATE
+// ============================
+let timerInterval  = null;
+let clockInterval  = null;
+let elapsedSeconds = 0;
+let isPaused       = true;
+let exitCount      = 0;
+let sessionStart   = null;
+let soundEnabled   = false;
+let audioCtx       = null;
+let noiseNodes     = [];
+let droneNodes     = [];
+let padNodes       = [];
+
+// ============================
+// LOCAL STORAGE HELPERS
+// ============================
+function loadData()        { return JSON.parse(localStorage.getItem('focusonstudy_data') || '{}'); }
+function saveData(d)       { localStorage.setItem('focusonstudy_data', JSON.stringify(d)); }
+function getData(key, def) { const d = loadData(); return d[key] !== undefined ? d[key] : def; }
+function setData(key, val) { const d = loadData(); d[key] = val; saveData(d); }
+
+// ============================
+// HOME STATS
+// ============================
+function updateHomeStats() {
+  const today    = new Date().toDateString();
+  const sessions = getData('sessions', []);
+  const todaySecs  = sessions.filter(s => new Date(s.date).toDateString() === today)
+                             .reduce((a, b) => a + (b.duration || 0), 0);
+  const totalSecs  = sessions.reduce((a, b) => a + (b.duration || 0), 0);
+  const totalHours = Math.floor(totalSecs / 3600);
+  document.getElementById('today-hours').textContent    = formatDuration(todaySecs);
+  document.getElementById('total-sessions').textContent = sessions.length;
+  document.getElementById('total-hours').textContent    = totalHours + 'h';
+  document.getElementById('streak-days').textContent    = calcStreak(sessions) + ' 🔥';
+}
+
+function formatDuration(secs) {
+  const h = Math.floor(secs / 3600);
+  const m = Math.floor((secs % 3600) / 60);
+  if (h > 0) return h + 'h ' + m + 'm';
+  return m + 'm ' + (secs % 60) + 's';
+}
+
+function calcStreak(sessions) {
+  if (!sessions.length) return 0;
+  const days = [...new Set(sessions.map(s => new Date(s.date).toDateString()))];
+  let streak = 0;
+  const now  = new Date();
+  for (let i = 0; i < 365; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    if (days.includes(d.toDateString())) streak++;
+    else if (i > 0) break;
+  }
+  return streak;
+}
+
+// ============================
+// STUDY SESSION
+// ============================
+function startStudy() {
+  elapsedSeconds = 0;
+  exitCount      = 0;
+  isPaused       = false;
+  sessionStart   = new Date();
+
+  document.getElementById('home-screen').classList.add('hidden');
+  document.getElementById('study-screen').classList.add('active');
+  document.getElementById('exit-warning').classList.remove('show');
+  updateTimerDisplay();
+  updateFocusUI();
+
+  const el = document.documentElement;
+  if      (el.requestFullscreen)       el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  else if (el.mozRequestFullScreen)    el.mozRequestFullScreen();
+
+  clockInterval = setInterval(updateClock, 1000);
+  updateClock();
+
+  timerInterval = setInterval(() => {
+    if (!isPaused) { elapsedSeconds++; updateTimerDisplay(); updateFocusUI(); }
+  }, 1000);
+
+  if (soundEnabled) startSound();
+}
+
+function togglePause() {
+  isPaused = !isPaused;
+  const btn     = document.getElementById('pause-btn');
+  const display = document.getElementById('timer-display');
+  if (isPaused) {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Tiếp tục`;
+    btn.className = 'ctrl-btn';
+    display.classList.add('paused');
+  } else {
+    btn.innerHTML = `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg> Tạm dừng`;
+    btn.className = 'ctrl-btn primary';
+    display.classList.remove('paused');
+  }
+}
+
+function endSession() {
+  clearInterval(timerInterval);
+  clearInterval(clockInterval);
+  stopSound();
+  if      (document.exitFullscreen)       document.exitFullscreen();
+  else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+  saveSession();
+  showSummary();
+}
+
+function saveSession() {
+  const sessions = getData('sessions', []);
+  const score    = calcFocusScore();
+  sessions.push({ date: sessionStart.toISOString(), duration: elapsedSeconds, exits: exitCount, score: score.num });
+  setData('sessions', sessions);
+  setData('streak', calcStreak(sessions));
+  checkAchievements(sessions, elapsedSeconds);
+}
+
+// ============================
+// TIMER DISPLAY
+// ============================
+function formatTime(secs) {
+  const h = String(Math.floor(secs / 3600)).padStart(2, '0');
+  const m = String(Math.floor((secs % 3600) / 60)).padStart(2, '0');
+  const s = String(secs % 60).padStart(2, '0');
+  return h + ':' + m + ':' + s;
+}
+
+function updateTimerDisplay() {
+  document.getElementById('timer-display').textContent       = formatTime(elapsedSeconds);
+  document.getElementById('session-exits-badge').textContent = 'Thoát: ' + exitCount;
+}
+
+function updateClock() {
+  document.getElementById('realtime-clock').textContent =
+    new Date().toLocaleTimeString('vi-VN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+}
+
+// ============================
+// FOCUS SCORE
+// ============================
+function calcFocusScore() {
+  if (elapsedSeconds < 10) return { num:100, label:'Deep Focus', cls:'deep' };
+  const score = Math.max(0, Math.min(100, 100 - exitCount * 8 + Math.min(10, Math.floor(elapsedSeconds / 600))));
+  let label, cls;
+  if      (score >= 95) { label = 'Deep Focus'; cls = 'deep'; }
+  else if (score >= 80) { label = 'Locked In';  cls = 'locked'; }
+  else                  { label = 'Distracted'; cls = 'distracted'; }
+  return { num: score, label, cls };
+}
+
+function updateFocusUI() {
+  const { num, label, cls } = calcFocusScore();
+  const offset = 213.6 - (num / 100) * 213.6;
+  document.getElementById('focus-score-num').textContent              = num;
+  document.getElementById('focus-ring-fill').style.strokeDashoffset   = offset;
+  document.getElementById('focus-progress-fill').style.width          = num + '%';
+  const ringFill = document.getElementById('focus-ring-fill');
+  ringFill.style.stroke = cls === 'deep' ? 'var(--green)' : cls === 'locked' ? 'var(--accent)' : 'var(--yellow)';
+  const labelEl = document.getElementById('focus-label');
+  labelEl.textContent = label;
+  labelEl.className   = 'focus-label ' + cls;
+}
+
+// ============================
+// FULLSCREEN EVENTS
+// ============================
+document.addEventListener('fullscreenchange',       handleFSChange);
+document.addEventListener('webkitfullscreenchange', handleFSChange);
+document.addEventListener('mozfullscreenchange',    handleFSChange);
+
+function handleFSChange() {
+  const inFS     = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+  const studying = document.getElementById('study-screen').classList.contains('active');
+  if (!studying) return;
+  if (!inFS) {
+    exitCount++;
+    if (!isPaused) togglePause();
+    const warn = document.getElementById('exit-warning');
+    warn.classList.add('show');
+    setTimeout(() => warn.classList.remove('show'), 4000);
+    updateTimerDisplay();
+  } else {
+    if (isPaused) togglePause();
+    document.getElementById('exit-warning').classList.remove('show');
+  }
+}
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden && !isPaused && document.getElementById('study-screen').classList.contains('active')) {
+    togglePause();
+    exitCount++;
+    updateTimerDisplay();
+  }
+});
+
+// ============================
+// SUMMARY
+// ============================
+function showSummary() {
+  document.getElementById('study-screen').classList.remove('active');
+  document.getElementById('home-screen').classList.remove('hidden');
+  const { num, label, cls } = calcFocusScore();
+  const emoji = cls === 'deep' ? '🎯' : cls === 'locked' ? '🔐' : '⚠️';
+  const badge = document.getElementById('summary-score-badge');
+  badge.textContent = emoji + ' ' + label;
+  badge.className   = 'score-badge-big ' + cls;
+  document.getElementById('sum-time').textContent   = formatDuration(elapsedSeconds);
+  document.getElementById('sum-score').textContent  = num + '/100';
+  document.getElementById('sum-exits').textContent  = exitCount + ' lần';
+  document.getElementById('sum-streak').textContent = calcStreak(getData('sessions', [])) + ' ngày';
+  renderAchievements();
+  document.getElementById('summary-modal').classList.add('show');
+  updateHomeStats();
+}
+function closeSummary()       { document.getElementById('summary-modal').classList.remove('show'); }
+function closeSummaryToHome() { closeSummary(); }
+
+// ============================
+// ACHIEVEMENTS
+// ============================
+const ACHIEVEMENTS = [
+  { id:'first',   icon:'🚀', name:'Bắt đầu hành trình', desc:'Hoàn thành phiên học đầu tiên',   check:(ss)     => ss.length >= 1 },
+  { id:'10h',     icon:'⏰', name:'10 giờ học',          desc:'Tổng thời gian học đạt 10 giờ',   check:(ss)     => ss.reduce((a,b)=>a+b.duration,0) >= 36000 },
+  { id:'3h_cont', icon:'🔥', name:'3 giờ liên tục',      desc:'Học liên tục 3 giờ không thoát',  check:(ss,dur) => dur >= 10800 },
+  { id:'7streak', icon:'📅', name:'7 ngày streak',        desc:'Học đủ 7 ngày liên tiếp',         check:(ss)     => calcStreak(ss) >= 7 },
+  { id:'perfect', icon:'💎', name:'Perfect Session',      desc:'Focus score 100 trong một phiên', check:(ss)     => ss.some(s => s.score === 100) },
+  { id:'50h',     icon:'🏆', name:'50 giờ học',           desc:'Tổng thời gian học đạt 50 giờ',   check:(ss)     => ss.reduce((a,b)=>a+b.duration,0) >= 180000 },
+];
+
+function checkAchievements(sessions, dur) {
+  const unlocked = getData('achievements', []);
+  ACHIEVEMENTS.forEach(a => { if (!unlocked.includes(a.id) && a.check(sessions, dur)) unlocked.push(a.id); });
+  setData('achievements', unlocked);
+}
+
+function renderAchievements() {
+  const unlocked = getData('achievements', []);
+  document.getElementById('achievements-list').innerHTML = ACHIEVEMENTS.map(a => {
+    const ok = unlocked.includes(a.id);
+    return `<div class="achievement-item ${ok?'unlocked':''}">
+      <span class="ach-icon">${a.icon}</span>
+      <div class="ach-info"><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div></div>
+      <span class="ach-status">${ok ? '✅ Đạt được' : '🔒 Chưa đạt'}</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================
+// HISTORY
+// ============================
+function openHistory() {
+  const sessions = getData('sessions', []).slice().reverse();
+  const list     = document.getElementById('history-list');
+  if (!sessions.length) {
+    list.innerHTML = '<p style="color:var(--text2);text-align:center;padding:24px;">Chưa có phiên học nào</p>';
+  } else {
+    list.innerHTML = sessions.slice(0, 20).map(s => {
+      const d     = new Date(s.date);
+      const ds    = d.toLocaleDateString('vi-VN', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+      const lbl   = s.score >= 95 ? 'deep' : s.score >= 80 ? 'locked' : 'distracted';
+      const name  = s.score >= 95 ? 'Deep Focus' : s.score >= 80 ? 'Locked In' : 'Distracted';
+      return `<div class="history-item">
+        <span class="history-date">${ds}</span>
+        <span class="history-time">${formatDuration(s.duration)}</span>
+        <span class="history-score ${lbl}">${name} ${s.score}</span>
+      </div>`;
+    }).join('');
+  }
+  document.getElementById('history-panel').classList.add('show');
+}
+function closeHistory() { document.getElementById('history-panel').classList.remove('show'); }
+
+// ============================
+// HEATMAP
+// ============================
+function openHeatmap()  { renderHeatmap(); document.getElementById('heatmap-panel').classList.add('show'); }
+function closeHeatmap() { document.getElementById('heatmap-panel').classList.remove('show'); }
+
+function renderHeatmap() {
+  const sessions = getData('sessions', []);
+  const dayMap   = {};
+  sessions.forEach(s => { const k = new Date(s.date).toDateString(); dayMap[k] = (dayMap[k]||0) + s.duration; });
+
+  const grid     = document.getElementById('heatmap-grid');
+  const monthsEl = document.getElementById('heatmap-months');
+  const monthLbls= {};
+  const now      = new Date();
+  grid.innerHTML = '';
+
+  for (let i = 364; i >= 0; i--) {
+    const d   = new Date(now); d.setDate(d.getDate() - i);
+    const key = d.toDateString();
+    const sec = dayMap[key] || 0;
+    let lv    = 0;
+    if (sec >     0) lv = 1;
+    if (sec >  3600) lv = 2;
+    if (sec >  7200) lv = 3;
+    if (sec > 14400) lv = 4;
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell';
+    if (lv) cell.setAttribute('data-level', lv);
+    cell.title = key + ': ' + formatDuration(sec);
+    grid.appendChild(cell);
+    const mo = d.toLocaleString('vi-VN', { month:'short' });
+    if (!monthLbls[mo]) monthLbls[mo] = true;
+  }
+  monthsEl.innerHTML = Object.keys(monthLbls).slice(0,12).map(m=>`<span>${m}</span>`).join('');
+}
+
+// ============================
+// SOUND — Web Audio API Lo-fi
+// ============================
+function initAudio() {
+  if (audioCtx) return;
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+}
+
+function startSound() {
+  initAudio();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  stopSound();
+
+  // Brown noise layer
+  const buf  = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+  const data = buf.getChannelData(0);
+  let last   = 0;
+  for (let i = 0; i < data.length; i++) {
+    const w = Math.random() * 2 - 1;
+    data[i] = (last + 0.02 * w) / 1.02; last = data[i]; data[i] *= 3.5;
+  }
+  const noise = audioCtx.createBufferSource(); noise.buffer = buf; noise.loop = true;
+  const ng    = audioCtx.createGain(); ng.gain.value = 0.04;
+  const filt  = audioCtx.createBiquadFilter(); filt.type = 'lowpass'; filt.frequency.value = 600;
+  noise.connect(filt); filt.connect(ng); ng.connect(audioCtx.destination); noise.start();
+  noiseNodes = [noise, filt, ng];
+
+  // Drone tones
+  droneNodes = [55, 110, 165].map(freq => {
+    const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+    o.type = 'sine'; o.frequency.value = freq; g.gain.value = 0.012;
+    o.connect(g); g.connect(audioCtx.destination); o.start(); return [o, g];
+  });
+
+  // Pad + LFO
+  const pad = audioCtx.createOscillator(); const pg = audioCtx.createGain();
+  const lfo = audioCtx.createOscillator(); const lg = audioCtx.createGain();
+  pad.type = 'triangle'; pad.frequency.value = 220;
+  lfo.frequency.value = 0.1; lg.gain.value = 8; pg.gain.value = 0.015;
+  lfo.connect(lg); lg.connect(pad.frequency); pad.connect(pg); pg.connect(audioCtx.destination);
+  pad.start(); lfo.start();
+  padNodes = [pad, pg, lfo, lg];
+}
+
+function stopSound() {
+  try { noiseNodes.forEach(n=>{try{n.stop&&n.stop()}catch(e){}});
+        droneNodes.forEach(p=>p.forEach(n=>{try{n.stop&&n.stop()}catch(e){}}));
+        padNodes.forEach(n=>{try{n.stop&&n.stop()}catch(e){}});
+  } catch(e) {}
+  noiseNodes=[]; droneNodes=[]; padNodes=[];
+}
+
+function toggleSound() {
+  soundEnabled = !soundEnabled;
+  const t1 = document.getElementById('sound-toggle-home');
+  const t2 = document.getElementById('session-sound-badge');
+  if (soundEnabled) {
+    t1&&t1.classList.add('active');
+    if (t2) t2.textContent = '🎵 ON';
+    if (document.getElementById('study-screen').classList.contains('active')) startSound();
+  } else {
+    t1&&t1.classList.remove('active');
+    if (t2) t2.textContent = '🎵 OFF';
+    stopSound();
+  }
+}
+
+// ============================
+// INIT
+// ============================
+updateHomeStats();
+</script>
+
+</body>
+</html>
